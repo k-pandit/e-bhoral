@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>e-Bhoral prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Noto+Sans+Bengali:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" integrity="sha384-mZT2gIty7ZDdOGkxfP6joZcYdMW1Jvj9dRlfpTmaJAKKXTqzygtB22k7FLe+KZC1" crossorigin="anonymous"></script>
+<style>
+:root{
+  --ink:#1C2A4A; --ink-2:#34446A; --muted:#5B6578; --desk:#EDF0F3; --paper:#FFFFFF; --line:#D6DDE6; --rule:#C9D7EA;
+  --red:#C8102E; --red-soft:#FBEAED; --amber:#8F5800; --amber-soft:#FFF3D9; --green:#1F7A55; --green-soft:#E4F3EB;
+  --sky:#E8EEF8; --focus:#1D5FD1; color-scheme:light;
+}
+*{box-sizing:border-box} html,body{margin:0}
+body{background:var(--desk);color:var(--ink);font:400 16px/1.5 "Atkinson Hyperlegible","Noto Sans Bengali",system-ui,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+[lang="as"]{font-family:"Noto Sans Bengali","Atkinson Hyperlegible",sans-serif}
+.notice{background:var(--ink);color:#fff;font-size:14px;padding:6px 16px;text-align:center}
+.notice b{color:#FFD7DE}
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:calc(100vh - 34px)}
+aside{background:var(--paper);border-right:4px double var(--red);padding:18px 14px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.brand b{font-size:20px;display:block;line-height:1.1} .brand span{color:var(--red);font-family:"Noto Sans Bengali",sans-serif;font-size:14px}
+.org{font-size:13px;color:var(--muted)}
+nav{display:flex;flex-direction:column;gap:2px}
+nav button{all:unset;cursor:pointer;padding:9px 12px;border-radius:4px;color:var(--ink-2)}
+nav button:hover{background:var(--sky)}
+nav button[aria-current="page"]{background:var(--ink);color:#fff;font-weight:700}
+nav button:focus-visible{outline:3px solid var(--focus)}
+.count{float:right;background:var(--red);color:#fff;border-radius:10px;font-size:12px;padding:0 7px;line-height:1.6;margin-top:2px}
+nav button[aria-current="page"] .count{background:#fff;color:var(--red)}
+.side-foot{margin-top:auto;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+.linkbtn{all:unset;cursor:pointer;color:var(--focus);text-decoration:underline;text-underline-offset:3px}
+.linkbtn:focus-visible{outline:3px solid var(--focus)}
+main{padding:18px 26px 48px;min-width:0}
+.topbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.who{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.who select{padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);font-size:15px}
+.demo-tag{font-size:12px;background:var(--amber-soft);color:var(--amber);border-radius:999px;padding:1px 8px;font-weight:700}
+.lang{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fff}
+.lang button{all:unset;cursor:pointer;padding:5px 12px;font-size:14px}
+.lang button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.lang button:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+h1{font-size:30px;line-height:1.15;margin:0 0 4px}
+h2{font-size:19px;margin:0 0 10px}
+h3{font-size:16px;margin:14px 0 6px}
+.lede{color:var(--muted);margin:0 0 16px;max-width:72ch}
+.grid{display:grid;gap:16px} .grid>*{min-width:0}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))} .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:16px 18px}
+.panel.flush{padding:0} .panel.flush h2{padding:14px 18px 0}
+.tile{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.tile .n{font-size:32px;font-weight:700;line-height:1}
+.tile.alert .n{color:var(--red)}
+.tbl{overflow-x:auto;position:relative}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:13px;color:var(--muted);background:#F7F9FB;white-space:nowrap}
+td.r,th.r{text-align:right}
+.sub{display:block;color:var(--muted);font-size:13px}
+.chip{display:inline-block;font-size:13px;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.chip.ok{background:var(--green-soft);color:var(--green)} .chip.wait{background:var(--amber-soft);color:var(--amber)}
+.chip.bad{background:var(--red-soft);color:var(--red)} .chip.info{background:var(--sky);color:var(--ink-2)}
+.btn{cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff;padding:8px 14px;border-radius:4px;font-weight:700;white-space:nowrap}
+.btn:hover{background:var(--ink-2)} .btn.ghost{background:#fff;color:var(--ink)} .btn.ghost:hover{background:var(--sky)}
+.btn.danger{background:#fff;color:var(--red);border-color:var(--red)} .btn.sm{padding:4px 10px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.field{display:flex;flex-direction:column;gap:4px;font-size:14px} .field>span{color:var(--muted)}
+input[type=text],input[type=number],input[type=date],select,textarea{padding:8px 10px;border:1px solid #BAC4D2;border-radius:4px;background:#fff;min-width:0}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.err{color:var(--red);font-size:14px;min-height:1.2em;margin:6px 0 0}
+.hint{color:var(--muted);font-size:14px}
+.why{font-size:13px;color:var(--muted)}
+.big td,.big th{font-size:17px}
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}
+.check:first-child{border-top:0}
+.tick{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:14px}
+.tick.ok{background:var(--green)} .tick.bad{background:var(--red)} .tick.wait{background:#C98A1B}
+pre.out{white-space:pre-wrap;background:#F4F6F9;border:1px solid var(--line);border-radius:4px;padding:10px;font-size:13px;margin:8px 0 0}
+pre.out.bad{background:var(--red-soft);border-color:#F0B9C3}
+pre.out.ok{background:var(--green-soft);border-color:#B5DCC8}
+.photo{display:inline-flex;align-items:center;gap:6px;font-size:13px;background:var(--sky);border-radius:4px;padding:2px 8px}
+dialog{border:0;padding:0;border-radius:8px;width:min(860px,calc(100% - 24px));max-height:calc(100vh - 40px);color:var(--ink)}
+dialog::backdrop{background:rgba(28,42,74,.5)}
+.dh{display:flex;justify-content:space-between;align-items:start;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:1}
+.dh h2{margin:0} .db{padding:16px 20px 20px}
+.x{all:unset;cursor:pointer;font-size:24px;line-height:1;padding:2px 8px;border-radius:4px}
+.x:focus-visible{outline:3px solid var(--focus)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 16px;border-radius:6px;max-width:min(620px,calc(100% - 24px));opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
+.toast.show{opacity:1} .toast.sms{background:#0B5A3C}
+/* Paper documents: voucher, register, certificate */
+.doc{background:#fff;border:1.5px solid var(--ink);padding:14px 18px;margin-top:10px}
+.doc-head{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:8px}
+.doc-head b{font-size:17px} .doc-head b.num{white-space:nowrap;font-size:16px}
+.doc table td,.doc table th{border:1px solid #9AA6B8;padding:5px 7px;font-size:14px}
+.doc table th{background:#fff;color:var(--ink)}
+.copies{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.copy-label{font-size:12px;font-weight:700;text-transform:none;color:var(--red)}
+.sig{margin-top:14px;border-top:1px dashed var(--ink);padding-top:6px;font-size:13px;min-height:52px}
+.qr{width:96px;height:96px;line-height:0;flex:none} .qr svg{width:96px;height:96px}
+.register td:first-child,.register th:first-child{border-right:3px double var(--red)!important}
+#print{display:none}
+@media (max-width:900px){.g2,.g4{grid-template-columns:minmax(0,1fr)} .copies{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  aside{border-right:0;border-bottom:4px double var(--red);padding:12px 14px;gap:10px}
+  nav{flex-direction:row;overflow-x:auto;gap:4px} nav button{white-space:nowrap} .side-foot{display:none}
+  main{padding:14px 16px 40px} h1{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+@media print{
+  body{background:#fff} body>*:not(#print){display:none!important}
+  #print{display:block} .doc{border:1.5px solid #000;page-break-inside:avoid} .noprint{display:none!important}
+}
+</style>
+</head>
+<body>
+<div class="notice">Prototype for NESFIC 2026. <b>Synthetic data.</b> Not an official Government system. SMS and photos are simulated.</div>
+<div class="app">
+  <aside>
+    <div class="brand"><b>e-Bhoral</b><span lang="as">ই-ভঁৰাল</span></div>
+    <div class="org">Directorate of Printing &amp; Stationery, Assam. The GFR stores register, made digital.</div>
+    <nav id="nav" aria-label="Main"></nav>
+    <div class="side-foot"><span>Saved in this browser only.</span><button class="linkbtn" data-act="reset">Reset demo data</button></div>
+  </aside>
+  <main id="main" tabindex="-1">
+    <div class="topbar">
+      <div class="who"><label for="role">Demo: switch user</label><select id="role"></select><span id="person"></span></div>
+      <div class="lang" role="group" aria-label="Language on counter, voucher and register screens">
+        <button data-lang="en" aria-pressed="true">English</button><button data-lang="as" aria-pressed="false" lang="as">অসমীয়া</button>
+      </div>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlgT"><div id="dlgC"></div></dialog>
+<div id="print"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+/* ===================== SHA-256 (pure JS, works on file:// and data: pages) ===================== */
+const SHA = (()=>{ const primes=[]; for(let n=2;primes.length<64;n++){ if(primes.every(p=>n%p)) primes.push(n); }
+  const frac=x=>Math.floor((x-Math.floor(x))*2**32)>>>0;
+  const K=primes.map(p=>frac(Math.cbrt(p))), H0=primes.slice(0,8).map(p=>frac(Math.sqrt(p)));
+  const r=(x,n)=>(x>>>n)|(x<<(32-n));
+  return str=>{ const b=new TextEncoder().encode(str), l=b.length, len=((l+9+63)>>6)<<6, m=new Uint8Array(len); m.set(b); m[l]=0x80;
+    const dv=new DataView(m.buffer); dv.setUint32(len-4,(l*8)>>>0); dv.setUint32(len-8,Math.floor(l*8/2**32));
+    let H=H0.slice(); const w=new Uint32Array(64);
+    for(let i=0;i<len;i+=64){ for(let t=0;t<16;t++) w[t]=dv.getUint32(i+t*4);
+      for(let t=16;t<64;t++){ const s0=r(w[t-15],7)^r(w[t-15],18)^(w[t-15]>>>3), s1=r(w[t-2],17)^r(w[t-2],19)^(w[t-2]>>>10); w[t]=(w[t-16]+s0+w[t-7]+s1)>>>0; }
+      let [a,bb,c,d,e,f,g,h]=H;
+      for(let t=0;t<64;t++){ const t1=(h+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[t]+w[t])>>>0, t2=((r(a,2)^r(a,13)^r(a,22))+((a&bb)^(a&c)^(bb&c)))>>>0;
+        h=g; g=f; f=e; e=(d+t1)>>>0; d=c; c=bb; bb=a; a=(t1+t2)>>>0; }
+      H=[a,bb,c,d,e,f,g,h].map((v,k)=>(H[k]+v)>>>0); }
+    return H.map(x=>x.toString(16).padStart(8,'0')).join(''); }; })();
+
+/* ===================== Words (Assamese only on counter, voucher, register: draft for language review) ===================== */
+const AS = {counter:'আজিৰ কাউণ্টাৰ', voucher:'যোগান ভাউচাৰ', storeCopy:'ভঁৰালৰ কপি', officeCopy:'কাৰ্যালয়ৰ কপি', received:'ওপৰৰ সামগ্ৰী ভাল অৱস্থাত বুজি পালোঁ',
+  register:'মজুত পঞ্জী', date:'তাৰিখ', vno:'ভাউচাৰ নং', party:'ক’ৰ পৰা / কাক', rec:'প্ৰাপ্তি', iss:'যোগান', bal:'জমা', by:'লিখোঁতা', item:'সামগ্ৰী', qty:'পৰিমাণ',
+  ready:'যোগানৰ বাবে সাজু', waiting:'অনুমোদনৰ অপেক্ষাত', capture:'চহী কৰা ভাউচাৰৰ ফটো', enter:'চাহিদা পত্ৰ প্ৰৱিষ্ট কৰক', issuePrint:'যোগান দিয়ক আৰু প্ৰিণ্ট কৰক'};
+let LANG='en';
+const L=(en,key)=> LANG==='as' && AS[key] ? `<span lang="as">${AS[key]}</span>` : en;
+
+/* ===================== Synthetic master data ===================== */
+const STORE='Main store (synthetic)';
+const ITEMS=[ // code, English, Assamese, unit, rate, reorder level, opening verified?
+ ['PAP-A4-70','A4 copier paper, 70 GSM','A4 কাগজ, ৭০ জি.এছ.এম.','ream',285,120,true],
+ ['PAP-FS-70','Legal paper, 70 GSM','লিগেল কাগজ','ream',340,80,true],
+ ['PAP-ML-70','Maplitho paper, 70 GSM','মেপলিথ’ কাগজ','ream',1150,40,true],
+ ['INK-OFF-BK','Offset ink, black','অফছেট চিয়াহী, ক’লা','kg',420,20,true],
+ ['PLT-CTP','CTP printing plates','চি.টি.পি. প্লেট','plate',310,90,true],
+ ['STN-PEN-BL','Ballpoint pens, blue (box of 50)','বলপইণ্ট কলম, নীলা','box',250,30,true],
+ ['STN-FC','File cover, plain','ফাইল কভাৰ','piece',9,800,true],
+ ['STN-NS','Green note-sheet pad','সেউজীয়া টোকা কাগজ','pad',45,150,true],
+ ['FRM-SB','Service book','চাকৰি বহী','piece',95,100,false],
+ ['FRM-TRC','Treasury challan (pad of 100)','ট্ৰেজাৰী চালান','pad',70,300,false]
+].map(([code,name,nameAs,unit,rate,reorder,verified])=>({code,name,nameAs,unit,rate,reorder,verified}));
+const OFFICES=[
+ {id:'GPRESS',name:'Assam Government Press',collectors:['H. Baruah, Press Supervisor','K. Nath, Machineman']},
+ {id:'DSE',name:'Directorate of Secondary Education',collectors:['N. Das, Messenger','J. Saikia, UDA']},
+ {id:'FIN',name:'Finance Department',collectors:['S. Das, LDA']},
+ {id:'DCKM',name:'Office of the Deputy Commissioner, Kamrup (Metro)',collectors:['A. Ali, Grade IV']},
+ {id:'SAD',name:'Secretariat Administration Department',collectors:['A. Hazarika, LDA']}
+];
+const PEOPLE={store:'R. Kalita, Store Keeper', officer:'M. Deka, Superintendent (Stores)', verifier:'B. Sarma, Accounts Officer', director:'Director, Printing & Stationery', auditor:'Internal Audit Cell'};
+const ROLES={
+  store:{label:'Store Keeper', nav:['counter','receive','register','verify']},
+  officer:{label:'Approving Officer', nav:['approve','counter','register','verify','audit']},
+  verifier:{label:'Verifier (another officer)', nav:['verify']},
+  director:{label:'Director', nav:['dash','audit','register']},
+  auditor:{label:'Auditor', nav:['audit','register']}
+};
+const NAV={counter:'Today at the counter', receive:'Receive goods', register:'Stock register (GFR-23)', verify:'Physical verification', approve:'Requisitions to approve', audit:'Audit readiness', dash:'Overview'};
+
+/* ===================== State ===================== */
+const KEY='ebhoral-v2-proto';
+let S, ui={view:null, role:'store', item:'PAP-A4-70', vres:null, digestText:null};
+const fy = d => { const x=new Date(d), y=x.getFullYear(); return x.getMonth()>=3 ? `${y}-${String((y+1)%100).padStart(2,'0')}` : `${y-1}-${String(y%100).padStart(2,'0')}`; };
+const today = () => { const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
+const nowISO = () => { const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,16); };
+const item = c => S.items.find(i=>i.code===c);
+const office = id => OFFICES.find(o=>o.id===id);
+const bal = c => S.ledger.filter(e=>e.code===c).reduce((s,e)=>s+e.qty,0);
+const genesis = () => SHA('ebhoral-genesis|DPNS-SYNTHETIC');
+const entryHash = e => SHA([e.prev,e.seq,e.voucher,e.code,e.qty,e.date].join('|'));
+
+function postTxn(series, type, date, lines, meta={}){
+  for (const l of lines){ if (bal(l.code)+l.qty < 0) throw new Error(`Not enough ${item(l.code).name} in stock (${bal(l.code)} ${item(l.code).unit}).`); }
+  const key=`${series}/${fy(date)}`; S.series[key]=(S.series[key]||0)+1;
+  const voucher=`${key}/${String(S.series[key]).padStart(6,'0')}`;
+  let prev = S.ledger.length ? S.ledger[S.ledger.length-1].hash : genesis();
+  lines.forEach(l=>{ const e={seq:S.ledger.length+1, voucher, type, date, ts:meta.ts||nowISO(), code:l.code, qty:l.qty, party:meta.party||'', by:meta.by||PEOPLE.store, ref:meta.ref||'', prev};
+    e.hash=entryHash(e); prev=e.hash; S.ledger.push(e); });
+  return voucher;
+}
+function seed(){
+  S={items:ITEMS.map(i=>({...i})), ledger:[], series:{}, indents:[], vouchers:[], digests:[], counts:[], discrepancies:[], audit:[], seqInd:139, tamper:null};
+  const opening={ 'PAP-A4-70':380,'PAP-FS-70':150,'PAP-ML-70':64,'INK-OFF-BK':12,'PLT-CTP':150,'STN-PEN-BL':140,'STN-FC':3800,'STN-NS':700,'FRM-SB':5,'FRM-TRC':1200 };
+  postTxn('OPN','OPENING','2026-10-01',Object.entries(opening).map(([code,qty])=>({code,qty})),{party:'Opening balance, physical count 30 Sep 2026',ts:'2026-10-01T10:00'});
+  postTxn('GRN','RECEIPT','2026-10-08',[{code:'PAP-A4-70',qty:200},{code:'STN-PEN-BL',qty:100}],{party:'Brahmaputra Paper Mart (synthetic supplier)',ref:'Challan CH/2026/1187',ts:'2026-10-08T11:20'});
+  const hist=[['2026-10-11','GPRESS','PAP-FS-70',20,'H. Baruah, Press Supervisor'],['2026-10-14','SAD','STN-NS',100,'A. Hazarika, LDA'],['2026-10-22','FIN','PAP-FS-70',60,'S. Das, LDA'],
+              ['2026-10-29','GPRESS','INK-OFF-BK',8,'K. Nath, Machineman'],['2026-11-10','GPRESS','PAP-ML-70',6,'H. Baruah, Press Supervisor']];
+  hist.forEach(([d,o,c,q,col],k)=>{ const ind=`IND/2026-27/${String(130+k).padStart(4,'0')}`; const v=postTxn('IV','ISSUE',d,[{code:c,qty:-q}],{party:office(o).name,ts:d+'T12:00'});
+    S.vouchers.push({no:v,indent:ind,office:o,date:d,ts:d+'T12:00',lines:[{code:c,qty:q}],collector:col,method:'Authorised list',status:'Acknowledged',photoAt:d+'T17:30'}); });
+  // Yesterday's issue: signed at the counter, store copy not yet photographed
+  const y='2026-11-18'; const v7=postTxn('IV','ISSUE',y,[{code:'FRM-SB',qty:-3}],{party:office('DSE').name,ts:y+'T12:10'});
+  S.vouchers.push({no:v7,indent:'IND/2026-27/0138',office:'DSE',date:y,ts:y+'T12:10',lines:[{code:'FRM-SB',qty:3}],collector:'N. Das, Messenger',method:'Named in letter',status:'Signed, photo pending'});
+  // Digest emailed yesterday evening
+  S.digests.push(makeDigest(y));
+  S.indents.push({no:'IND/2026-27/0139',office:'GPRESS',letterNo:'AGP/ST/2026/211',letterDate:'2026-11-17',signatory:'Manager, Assam Government Press',photo:'letter-AGP-211.jpg',
+    purpose:'Gazette weekly issues, December',lines:[{code:'PAP-ML-70',req:30,appr:30,iss:0},{code:'PLT-CTP',req:40,appr:40,iss:0}],status:'Ready to issue',approvedBy:PEOPLE.officer,otp:'482915',ts:'2026-11-18T10:05'});
+  S.indents.push({no:'IND/2026-27/0140',office:'DCKM',letterNo:'KMD/GA/2026/88',letterDate:'2026-11-18',signatory:'Additional Deputy Commissioner (GA)',photo:'letter-KMD-88.jpg',
+    purpose:'Monthly office supplies',lines:[{code:'PAP-A4-70',req:40,appr:null,iss:0},{code:'STN-PEN-BL',req:10,appr:null,iss:0},{code:'STN-FC',req:300,appr:null,iss:0}],status:'Waiting approval',ts:'2026-11-18T14:40'});
+  S.seqInd=141;
+  log('Loaded synthetic demo data','OPN/2026-27/000001','Opening balances, 10 items');
+}
+function makeDigest(date){
+  const last=S.ledger[S.ledger.length-1];
+  return {date, lastSeq:last.seq, lastHash:last.hash, ranges:{...S.series}, gap:gapCheck().ok?'OK':'GAPS', sentTo:'Director, Accounts Officer, Audit cell'};
+}
+function log(action,doc,detail){ S.audit.unshift({ts:nowISO(),user:ui.role?PEOPLE[ui.role]:'System',action,doc,detail}); }
+function load(){ try{ const r=localStorage.getItem(KEY); if(r){ S=JSON.parse(r); return; } }catch(e){} seed(); }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+
+/* ===================== Helpers ===================== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dstr=d=>new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+const tstr=d=>new Date(d).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+const fmt=n=>Number(n).toLocaleString('en-IN');
+let tt; function toast(msg,kind){ const el=$('#toast'); el.textContent=msg; el.className='toast show'+(kind?' '+kind:''); clearTimeout(tt); tt=setTimeout(()=>el.className='toast',4600); }
+const sms = msg => toast('SMS (simulated) → office: '+msg,'sms');
+function vStatus(v){ if(v.status==='Signed, photo pending' && (Date.now()-new Date(v.ts).getTime())>864e5) return 'Overdue'; return v.status; }
+const chip = s => `<span class="chip ${({'Acknowledged':'ok','Ready to issue':'ok','In stock':'ok','Signed, photo pending':'wait','Waiting approval':'wait','Part issued':'wait','Running low':'wait','Overdue':'bad','Disputed':'bad','Returned':'bad','Out of stock':'bad','Cancelled':'info','Issued':'ok'})[s]||'info'}">${esc(s)}</span>`;
+const stockChip = c => { const b=bal(c), it=item(c); return chip(b<=0?'Out of stock':b<=it.reorder?'Running low':'In stock'); };
+function qrSVG(text,size=96){ if(window.qrcode){ const q=qrcode(0,'M'); q.addData(text); q.make(); return q.createSvgTag({cellSize:3,margin:0,scalable:true}); }
+  return `<svg viewBox="0 0 10 10" width="${size}" height="${size}" role="img" aria-label="QR code"><rect width="10" height="10" fill="#fff" stroke="#1C2A4A"/><text x="5" y="6" font-size="2" text-anchor="middle">QR</text></svg>`; }
+function gapCheck(){ const by={}; S.ledger.forEach(e=>{ const [s,f,n]=e.voucher.split('/'); (by[s+'/'+f]=by[s+'/'+f]||new Set()).add(+n); });
+  const bad=Object.entries(by).filter(([k,set])=>Math.max(...set)!==set.size).map(([k])=>k); return {ok:!bad.length, bad, series:Object.entries(by).map(([k,set])=>({k,last:Math.max(...set),count:set.size}))}; }
+function avgMonthly(officeId,code){ const iss=S.vouchers.filter(v=>v.office===officeId).flatMap(v=>v.lines.filter(l=>l.code===code)); return iss.length? Math.round(iss.reduce((s,l)=>s+l.qty,0)/2) : 0; }
+
+/* ===================== Verify ledger (independent recomputation) ===================== */
+function verifyLedger(){
+  const findings=[]; let prev=genesis(), first=null;
+  S.ledger.forEach((e,k)=>{ if(first) return;
+    if(e.seq!==k+1) first=`Entry #${k+1} is missing or out of order.`;
+    else if(e.prev!==prev) first=`Chain link broken at entry #${e.seq} (${e.voucher}).`;
+    else if(entryHash(e)!==e.hash) first=`Entry #${e.seq} (${e.voucher}, dated ${dstr(e.date)}) was changed after it was recorded. Its content no longer matches its fingerprint.`;
+    prev=e.hash; });
+  if(first) findings.push(first);
+  S.digests.forEach(d=>{ const e=S.ledger[d.lastSeq-1]; if(!e || e.hash!==d.lastHash) findings.push(`The ledger no longer matches the digest emailed on ${dstr(d.date)} (entry #${d.lastSeq}). Past entries were rewritten.`); });
+  const g=gapCheck(); if(!g.ok) findings.push(`Voucher series with gaps: ${g.bad.join(', ')}.`);
+  return {ok:!findings.length, findings, checked:S.ledger.length, digests:S.digests.length, at:nowISO()};
+}
+
+/* ===================== Shell ===================== */
+function counts(){ return {
+  approve:S.indents.filter(i=>i.status==='Waiting approval').length,
+  counter:S.indents.filter(i=>i.status==='Ready to issue'||i.status==='Part issued').length + S.vouchers.filter(v=>['Signed, photo pending','Overdue'].includes(vStatus(v))).length,
+  verify:S.counts.filter(c=>c.status!=='Certified').length,
+  audit:exceptions().length }; }
+function render(){
+  if(!ui.view || !ROLES[ui.role].nav.includes(ui.view)) ui.view=ROLES[ui.role].nav[0];
+  const c=counts();
+  $('#nav').innerHTML=ROLES[ui.role].nav.map(k=>`<button data-view="${k}" ${ui.view===k?'aria-current="page"':''}>${k==='counter'?L(NAV[k],'counter'):k==='register'?L(NAV[k],'register'):NAV[k]}${c[k]?`<span class="count">${c[k]}</span>`:''}</button>`).join('');
+  $('#role').innerHTML=Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${k===ui.role?'selected':''}>${r.label}</option>`).join('');
+  $('#person').innerHTML=`${esc(PEOPLE[ui.role])} <span class="demo-tag">demo</span>`;
+  document.querySelectorAll('.lang button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===LANG)));
+  $('#view').innerHTML=({counter:vCounter,receive:vReceive,register:vRegister,verify:vVerify,approve:vApprove,audit:vAudit,dash:vDash})[ui.view]();
+  save();
+}
+function go(v){ ui.view=v; render(); window.scrollTo(0,0); }
+
+/* ===================== Counter (Store Keeper home) ===================== */
+function vCounter(){
+  const ready=S.indents.filter(i=>i.status==='Ready to issue'||i.status==='Part issued');
+  const waiting=S.indents.filter(i=>i.status==='Waiting approval');
+  const pending=S.vouchers.filter(v=>['Signed, photo pending','Overdue'].includes(vStatus(v)));
+  const recent=S.vouchers.slice(-6).reverse();
+  return `<h1>${L('Today at the counter','counter')}</h1>
+  <p class="lede">Requisition letters, issues and receipts for ${dstr(today())}. Every issue ends with the collector's signature on a numbered voucher, the written acknowledgement GFR 2017 Rule 209(ii) requires.</p>
+  <div class="actions" style="margin-bottom:16px"><button class="btn" data-act="new-req">${L('Enter requisition letter','enter')}</button><button class="btn ghost" data-act="go" data-id="receive">Receive goods</button></div>
+  <div class="grid g2">
+    <section class="panel flush"><h2>${L('Ready to issue','ready')} (${ready.length})</h2><div class="tbl"><table class="big">
+      ${ready.map(i=>`<tr><td><b>${esc(office(i.office).name)}</b><span class="sub">${esc(i.no)} · letter ${esc(i.letterNo)}</span></td><td>${i.lines.filter(l=>(l.appr||0)>l.iss).length} lines</td><td><button class="btn sm" data-act="issue" data-id="${i.no}">Issue</button></td></tr>`).join('')||'<tr><td class="hint">Nothing ready to issue.</td></tr>'}
+    </table></div></section>
+    <section class="panel flush"><h2>${L('Signed vouchers to capture','capture')} (${pending.length})</h2><div class="tbl"><table>
+      ${pending.map(v=>`<tr><td><b>${esc(v.no)}</b><span class="sub">${esc(office(v.office).name)}, signed by ${esc(v.collector)}</span></td><td>${chip(vStatus(v))}</td></tr>`).join('')||'<tr><td class="hint">All signed vouchers are photographed.</td></tr>'}
+    </table></div>${pending.length?`<div style="padding:12px 18px"><button class="btn" data-act="capture">Photograph the signed vouchers (batch)</button><p class="why">One photo per voucher; each is matched by its QR code, with no typing.</p></div>`:''}</section>
+    <section class="panel flush"><h2>${L('Waiting for approval','waiting')} (${waiting.length})</h2><div class="tbl"><table>
+      ${waiting.map(i=>`<tr><td><b>${esc(office(i.office).name)}</b><span class="sub">${esc(i.no)}, entered ${tstr(i.ts)}</span></td><td>${chip(i.status)}</td></tr>`).join('')||'<tr><td class="hint">None.</td></tr>'}
+    </table></div></section>
+    <section class="panel flush"><h2>Recent vouchers</h2><div class="tbl"><table>
+      ${recent.map(v=>`<tr><td><button class="linkbtn" data-act="voucher" data-id="${v.no}">${esc(v.no)}</button><span class="sub">${dstr(v.date)}, ${esc(office(v.office).name)}</span></td><td>${chip(vStatus(v))}</td><td>${vStatus(v)!=='Disputed'&&v.status!=='Cancelled'?`<button class="btn ghost sm" data-act="dispute" data-id="${v.no}">Office called: dispute</button>`:''}</td></tr>`).join('')}
+    </table></div></section>
+  </div>`;
+}
+
+/* ----- Requisition letter entry ----- */
+let reqDraft=null;
+function reqForm(){
+  const d=reqDraft;
+  return `<div class="dh"><h2 id="dlgT">${L('Enter requisition letter','enter')}</h2><button class="x" data-act="close" aria-label="Close">×</button></div><div class="db">
+  <p class="hint" style="margin-top:0">Offices keep sending signed letters as today. No office has to log in.</p>
+  <div class="form-grid">
+    <label class="field"><span>Office</span><select id="r-office">${OFFICES.map(o=>`<option value="${o.id}" ${o.id===d.office?'selected':''}>${esc(o.name)}</option>`).join('')}</select></label>
+    <label class="field"><span>Letter number</span><input type="text" id="r-no" value="${esc(d.letterNo)}"></label>
+    <label class="field"><span>Letter date</span><input type="date" id="r-date" value="${esc(d.letterDate)}"></label>
+    <label class="field"><span>Signed by</span><input type="text" id="r-sig" value="${esc(d.signatory)}"></label>
+    <label class="field"><span>Collector named in the letter (optional)</span><input type="text" id="r-col" value="${esc(d.collector)}"></label>
+  </div>
+  <table><thead><tr><th>${L('Item','item')}</th><th class="r">${L('Quantity','qty')}</th><th>In store now</th><th></th></tr></thead><tbody>
+  ${d.lines.map((l,k)=>`<tr><td><select data-rl="${k}" data-k="code" aria-label="Item ${k+1}"><option value="">Choose an item</option>${S.items.map(i=>`<option value="${i.code}" ${i.code===l.code?'selected':''}>${esc(i.name)}</option>`).join('')}</select></td>
+    <td class="r"><input type="number" min="1" style="width:100px" data-rl="${k}" data-k="qty" value="${esc(l.qty)}" aria-label="Quantity ${k+1}"></td>
+    <td>${l.code?`${fmt(bal(l.code))} ${esc(item(l.code).unit)} ${stockChip(l.code)}`:'–'}</td><td><button class="btn ghost sm" data-act="rl-del" data-id="${k}">Remove</button></td></tr>`).join('')}
+  </tbody></table>
+  <div class="actions" style="margin:10px 0"><button class="btn ghost sm" data-act="rl-add">Add another item</button></div>
+  <div class="field"><span>Photo of the signed letter (required: the approver sees it)</span>
+    <div class="actions"><input type="file" accept="image/*" capture="environment" id="r-photo"><button class="btn ghost sm" data-act="r-demo-photo">Use demo photo</button>${d.photo?`<span class="photo">📷 ${esc(d.photo)}</span>`:''}</div></div>
+  <p class="err" id="r-err" role="alert"></p>
+  <div class="actions"><button class="btn" data-act="r-save">Register requisition</button></div></div>`;
+}
+function syncReq(){ const d=reqDraft; if(!d||!$('#r-office')) return; d.office=$('#r-office').value; d.letterNo=$('#r-no').value; d.letterDate=$('#r-date').value; d.signatory=$('#r-sig').value; d.collector=$('#r-col').value;
+  document.querySelectorAll('[data-rl]').forEach(el=>{ d.lines[+el.dataset.rl][el.dataset.k]=el.value; }); }
+
+/* ----- Issue at the counter ----- */
+function issueDialog(no){
+  const ind=S.indents.find(i=>i.no===no), o=office(ind.office);
+  const lines=ind.lines.filter(l=>(l.appr||0)>l.iss);
+  return `<div class="dh"><div><h2 id="dlgT">${L('Issue and print','issuePrint')}: ${esc(o.name)}</h2><div class="hint">${esc(ind.no)} · letter ${esc(ind.letterNo)} of ${dstr(ind.letterDate)} · approved by ${esc(ind.approvedBy)}</div></div><button class="x" data-act="close" aria-label="Close">×</button></div><div class="db">
+  <h3 style="margin-top:0">1. Check the collector</h3>
+  <div class="form-grid">
+    <label class="field"><span>How is the collector authorised?</span><select id="i-method"><option value="list">On the office's authorised-collector list</option><option value="letter">Named in the requisition letter</option><option value="otp">Shows the Authority OTP sent at approval</option></select></label>
+    <label class="field"><span>Authorised collector</span><select id="i-col">${o.collectors.map(c=>`<option>${esc(c)}</option>`).join('')}<option value="__other">Someone not on the list</option></select></label>
+    <label class="field"><span>Authority OTP (only if used)</span><input type="text" id="i-otp" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></label>
+  </div>
+  <p class="why">Demo Authority OTP for this requisition: <b>${esc(ind.otp||'')}</b>. The OTP proves authority to collect. It is not the receipt: the collector's signature is.</p>
+  <h3>2. Confirm quantities (can only be reduced)</h3>
+  <table class="big"><thead><tr><th>${L('Item','item')}</th><th class="r">Approved, still due</th><th class="r">In store</th><th class="r">Issue now</th></tr></thead><tbody>
+  ${lines.map((l,k)=>{ const it=item(l.code), due=l.appr-l.iss, b=bal(l.code);
+    return `<tr><td>${LANG==='as'?`<span lang="as">${esc(it.nameAs)}</span>`:esc(it.name)}${!it.verified?'<span class="sub">Opening stock not yet verified</span>':''}</td><td class="r num">${fmt(due)} ${esc(it.unit)}</td><td class="r num">${fmt(b)}</td>
+      <td class="r"><input type="number" min="0" max="${due}" value="${Math.min(due,Math.max(b,0)) || (it.verified?0:due)}" data-iq="${k}" data-code="${l.code}" style="width:100px" aria-label="Issue quantity for ${esc(it.name)}"></td></tr>`; }).join('')}
+  </tbody></table>
+  <div id="i-cc" style="display:none" class="panel" ><h3 style="margin-top:0">Shelf count needed</h3>
+    <p class="hint" style="margin:0 0 8px">The issue is more than the recorded balance of an item whose opening stock is not yet verified. Count the shelf; a different supervisor approves; the correction and the issue are recorded together.</p>
+    <div class="form-grid"><label class="field"><span>Counted on the shelf now</span><input type="number" min="0" id="i-counted"></label>
+    <label class="field"><span>Supervisor approving</span><select id="i-sup"><option value="">Choose</option><option>${esc(PEOPLE.store)}</option><option>${esc(PEOPLE.officer)}</option><option>${esc(PEOPLE.verifier)}</option></select></label></div></div>
+  <p class="err" id="i-err" role="alert"></p>
+  <div class="actions"><button class="btn" data-act="do-issue" data-id="${ind.no}">${L('Issue and print','issuePrint')}</button></div></div>`;
+}
+
+/* ----- Voucher document (duplicate) ----- */
+function voucherDoc(v){
+  const o=office(v.office);
+  const copy=(label,key)=>`<div class="doc">
+    <div class="doc-head"><div><b>${L('Issue voucher','voucher')}</b><span class="sub">Directorate of Printing &amp; Stationery, Assam · ${esc(STORE)}</span></div>
+    <div style="text-align:right"><b class="num">${esc(v.no)}</b><span class="sub">${dstr(v.date)}</span><span class="copy-label">${L(label,key)}</span></div></div>
+    <div style="display:flex;gap:12px;justify-content:space-between"><div>Issued to: <b>${esc(o.name)}</b><span class="sub">Against ${esc(v.indent)}. Collector: ${esc(v.collector)} (${esc(v.method)})</span></div><div class="qr">${qrSVG(`e-Bhoral ${v.no}`)}</div></div>
+    <table style="width:100%;margin-top:8px"><thead><tr><th>${L('Item','item')}</th><th class="r">${L('Quantity','qty')}</th></tr></thead><tbody>
+      ${v.lines.map(l=>`<tr><td>${esc(item(l.code).name)}${LANG==='as'?` / <span lang="as">${esc(item(l.code).nameAs)}</span>`:''}</td><td class="r num">${fmt(l.qty)} ${esc(item(l.code).unit)}</td></tr>`).join('')}</tbody></table>
+    <div class="sig">${key==='storeCopy'?`${L('Received the above in good condition','received')}.<br>Signature, name and designation of collector: ____________________`:'Issued by: '+esc(PEOPLE.store)}</div></div>`;
+  return `<div class="copies">${copy('Store copy: collector signs here','storeCopy')}${copy('Office copy','officeCopy')}</div>`;
+}
+function voucherDialog(no){
+  const v=S.vouchers.find(x=>x.no===no);
+  return `<div class="dh"><div><h2 id="dlgT">${esc(v.no)}</h2><div class="hint">${chip(vStatus(v))} ${v.photoAt?`<span class="photo">📷 store copy matched by QR, ${tstr(v.photoAt)}</span>`:''}</div></div><button class="x" data-act="close" aria-label="Close">×</button></div>
+  <div class="db">${voucherDoc(v)}<div class="actions noprint" style="margin-top:12px"><button class="btn" data-act="print-voucher" data-id="${v.no}">Print duplicate voucher (A4)</button><button class="btn ghost" data-act="qr-check" data-id="${v.no}">What the public QR check shows</button></div></div>`;
+}
+
+/* ===================== Receive goods (GFR 208) ===================== */
+let recDraft={supplier:'',ref:'',code:'PAP-A4-70',qty:''};
+function vReceive(){ const d=recDraft;
+  return `<h1>Receive goods</h1><p class="lede">GFR 2017 Rule 208: count and inspect, record the receipt, and the officer certifies it.</p>
+  <div class="panel"><div class="form-grid">
+    <label class="field"><span>Supplier</span><input type="text" id="g-sup" value="${esc(d.supplier)}"></label>
+    <label class="field"><span>Challan or order reference</span><input type="text" id="g-ref" value="${esc(d.ref)}"></label>
+    <label class="field"><span>Item</span><select id="g-code">${S.items.map(i=>`<option value="${i.code}" ${i.code===d.code?'selected':''}>${esc(i.name)}</option>`).join('')}</select></label>
+    <label class="field"><span>Quantity received</span><input type="number" min="1" id="g-qty" value="${esc(d.qty)}"></label></div>
+    <label class="check" style="border:0"><input type="checkbox" id="g-cert"> <span>Counted and inspected; I certify receipt and entry in the stock register.</span></label>
+    <p class="err" id="g-err" role="alert"></p><button class="btn" data-act="receive">Record receipt</button></div>`; }
+
+/* ===================== Approvals ===================== */
+function vApprove(){
+  const list=S.indents.filter(i=>i.status==='Waiting approval');
+  return `<h1>Requisitions to approve</h1><p class="lede">Each request shows the signed letter, live stock, the office's recent issues and its average monthly use.</p>
+  ${list.map(i=>`<section class="panel" style="margin-bottom:14px"><div class="actions" style="justify-content:space-between"><div><b>${esc(office(i.office).name)}</b> <span class="hint">${esc(i.no)} · letter ${esc(i.letterNo)} of ${dstr(i.letterDate)}, signed by ${esc(i.signatory)}</span></div><span class="photo">📷 ${esc(i.photo)} (signed letter)</span></div>
+    <div class="tbl"><table><thead><tr><th>Item</th><th class="r">Requested</th><th class="r">In store</th><th>Last 3 issues to this office</th><th class="r">Avg monthly use</th><th class="r">Approve</th></tr></thead><tbody>
+    ${i.lines.map((l,k)=>{ const it=item(l.code); const last=S.vouchers.filter(v=>v.office===i.office).flatMap(v=>v.lines.filter(x=>x.code===l.code).map(x=>`${fmt(x.qty)} on ${dstr(v.date)}`)).slice(-3);
+      return `<tr><td>${esc(it.name)}</td><td class="r num">${fmt(l.req)} ${esc(it.unit)}</td><td class="r num">${fmt(bal(l.code))} ${stockChip(l.code)}</td><td>${last.join('<br>')||'<span class="hint">none</span>'}</td><td class="r num">${fmt(avgMonthly(i.office,l.code))}</td>
+        <td class="r"><input type="number" min="0" max="${l.req}" value="${l.req}" data-ap="${i.no}" data-k="${k}" style="width:90px" aria-label="Approved quantity"></td></tr>`; }).join('')}
+    </tbody></table></div>
+    <label class="field" style="margin-top:8px"><span>Remark (required if you reduce or return)</span><input type="text" id="rm-${esc(i.no)}"></label>
+    <p class="err" id="ae-${esc(i.no)}" role="alert"></p>
+    <div class="actions"><button class="btn" data-act="approve" data-id="${i.no}">Approve</button><button class="btn danger" data-act="return" data-id="${i.no}">Return to office</button></div></section>`).join('') || '<div class="panel"><p class="hint" style="margin:0">Nothing waiting for approval.</p></div>'}`;
+}
+
+/* ===================== Stock register (Form GFR-23 layout) ===================== */
+function registerDoc(code){
+  const it=item(code); let run=0;
+  const rows=S.ledger.filter(e=>e.code===code).map(e=>{ run+=e.qty; return `<tr><td class="num">${dstr(e.date)}</td><td class="num">${esc(e.voucher)}</td><td>${esc(e.party)}</td><td class="r num">${e.qty>0?fmt(e.qty):''}</td><td class="r num">${e.qty<0?fmt(-e.qty):''}</td><td class="r num"><b>${fmt(run)}</b></td><td>${esc((e.by||'').split(',')[0])}</td><td>${esc(e.ref)}</td></tr>`; }).join('');
+  return `<div class="doc register"><div class="doc-head"><div><b>${L('Stock register','register')} (Form GFR-23 layout) · ${esc(it.name)}</b><span class="sub">${esc(STORE)} · Unit: ${esc(it.unit)} · FY ${fy(today())}</span></div><div class="qr" style="width:64px;height:64px">${qrSVG('e-Bhoral register '+code,64)}</div></div>
+  <table style="width:100%"><thead><tr><th>${L('Date','date')}</th><th>${L('Voucher no.','vno')}</th><th>${L('From / to','party')}</th><th class="r">${L('Received','rec')}</th><th class="r">${L('Issued','iss')}</th><th class="r">${L('Balance','bal')}</th><th>${L('Entered by','by')}</th><th>Reference</th></tr></thead><tbody>${rows}</tbody></table>
+  <div class="sig">Verified with the ledger on ${dstr(today())}. Signature of Store Keeper: ______________ &nbsp; Countersigned: ______________</div></div>`;
+}
+function vRegister(){
+  return `<h1>${L('Stock register','register')}</h1><p class="lede">Printed in the Form GFR-23 layout from the ledger: already added up, with voucher numbers consecutive within the financial year. Sign and file it in place of the hand-written page.</p>
+  <div class="actions" style="margin-bottom:12px"><label class="field"><span>Item</span><select id="reg-item">${S.items.map(i=>`<option value="${i.code}" ${i.code===ui.item?'selected':''}>${esc(i.name)}</option>`).join('')}</select></label>
+  <button class="btn" data-act="print-register" style="align-self:end">Print register page</button><button class="btn ghost" data-act="charge" style="align-self:end">Transfer-of-charge statement</button></div>
+  <div class="tbl">${registerDoc(ui.item)}</div>`;
+}
+function chargeDoc(){
+  return `<div class="doc"><div class="doc-head"><b>Statement on transfer of charge (GFR 2017 Rule 216)</b><span>${dstr(today())}</span></div>
+  <p style="margin:0 0 8px">${esc(STORE)}. Balances as per the stock register on the date of handing over.</p>
+  <table style="width:100%"><thead><tr><th>Item</th><th>Unit</th><th class="r">Book balance</th><th>Opening verified?</th></tr></thead><tbody>
+  ${S.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${esc(i.unit)}</td><td class="r num">${fmt(bal(i.code))}</td><td>${i.verified?'Yes':'No: count before handing over'}</td></tr>`).join('')}</tbody></table>
+  <div class="copies" style="margin-top:14px"><div class="sig">Relieved officer (handed over): ______________</div><div class="sig">Relieving officer (taken over): ______________</div></div></div>`;
+}
+
+/* ===================== Physical verification (GFR 213) ===================== */
+function vVerify(){
+  const c=S.counts.find(x=>x.status!=='Certified'); const done=S.counts.filter(x=>x.status==='Certified');
+  let body='';
+  if(!c){ body = ui.role==='officer' ? `<section class="panel"><h2>Schedule a count</h2><div class="form-grid"><label class="field"><span>Verifier</span><select id="v-who"><option>${esc(PEOPLE.verifier)}</option><option>${esc(PEOPLE.store)}</option></select></label>
+      <label class="field"><span>Items</span><select id="v-scope"><option value="A">Class A: paper and press items (5)</option><option value="all">All items (${S.items.length})</option></select></label></div>
+      <p class="err" id="v-err" role="alert"></p><button class="btn" data-act="schedule">Schedule count and print blind sheets</button></section>`
+    : `<div class="panel"><p class="hint" style="margin:0">No count is scheduled. The Approving Officer schedules counts.</p></div>`;
+  } else {
+    const blind = c.lines.map((l,k)=>`<tr><td>${esc(item(l.code).name)}</td><td>${esc(item(l.code).unit)}</td><td class="r">${ui.role==='verifier'&&c.status==='Counting'?`<input type="number" min="0" data-cnt="${k}" value="${l.counted??''}" style="width:110px" aria-label="Count for ${esc(item(l.code).name)}">`:(l.counted??'–')}</td>${c.status!=='Counting'?`<td class="r num">${fmt(l.book)}</td><td class="r num">${l.counted-l.book}</td>`:''}</tr>`).join('');
+    body=`<section class="panel"><h2>Count ${esc(c.id)}: ${chip(c.status)}</h2><p class="hint">Verifier: ${esc(c.verifier)} · custodian: ${esc(PEOPLE.store)} (must be present and countersign). ${c.status==='Counting'?'Book balances are hidden on the count sheet.':''}</p>
+      <div class="tbl"><table><thead><tr><th>Item</th><th>Unit</th><th class="r">Counted</th>${c.status!=='Counting'?'<th class="r">Book</th><th class="r">Variance</th>':''}</tr></thead><tbody>${blind}</tbody></table></div>
+      <p class="err" id="v-err" role="alert"></p>
+      <div class="actions" style="margin-top:10px">
+        ${ui.role==='verifier'&&c.status==='Counting'?'<button class="btn" data-act="submit-count">Submit counts</button>':''}
+        ${ui.role==='store'&&c.status==='Counting'?'<p class="hint" style="margin:0">You keep this store, so another officer counts. You are present and countersign when the counts are submitted.</p>':''}
+        ${ui.role==='store'&&c.status==='Awaiting countersign'?'<button class="btn" data-act="countersign">Present and countersign</button>':''}
+        ${ui.role==='officer'&&c.status==='Awaiting countersign'?'<span class="hint">Waiting for the custodian to countersign.</span>':''}
+      </div></section>`;
+  }
+  const disc=S.discrepancies;
+  return `<h1>Physical verification</h1><p class="lede">GFR 2017 Rule 213: a blind count by an officer who does not keep the store, a certificate, and discrepancies settled only against a sanction.</p>${body}
+  ${disc.length?`<section class="panel flush" style="margin-top:14px"><h2>Discrepancy register</h2><div class="tbl"><table><thead><tr><th>Item</th><th class="r">Variance</th><th>Status</th><th></th></tr></thead><tbody>
+    ${disc.map((d,k)=>`<tr><td>${esc(item(d.code).name)}<span class="sub">Count ${esc(d.count)}</span></td><td class="r num">${d.variance>0?'+':''}${fmt(d.variance)}</td><td>${d.status==='Adjusted'?chip('Acknowledged').replace('Acknowledged','Adjusted, '+esc(d.voucher)):chip('Waiting approval').replace('Waiting approval','Under investigation')}</td>
+    <td>${ui.role==='officer'&&d.status!=='Adjusted'?`<div class="actions"><input type="text" placeholder="Sanction order ref." id="sanc-${k}" style="width:170px"><button class="btn sm" data-act="adjust" data-id="${k}">Adjust</button></div>`:''}</td></tr>`).join('')}</tbody></table></div></section>`:''}
+  ${done.length?`<section class="panel" style="margin-top:14px"><h2>Certificates</h2>${done.map(x=>`<p style="margin:4px 0">${esc(x.id)}, ${dstr(x.date)}: ${x.lines.length} items verified by ${esc(x.verifier)}, countersigned by the custodian. <button class="linkbtn" data-act="cert" data-id="${x.id}">View certificate</button></p>`).join('')}</section>`:''}`;
+}
+function certDoc(c){ return `<div class="doc"><div class="doc-head"><b>Physical Verification Certificate (GFR 2017 Rule 213)</b><span>${esc(c.id)} · ${dstr(c.date)}</span></div>
+  <p style="margin:0 0 8px">Certified that the stores listed below were physically verified on ${dstr(c.date)} by an officer other than the custodian, in the custodian's presence. Variances are entered in the discrepancy register.</p>
+  <table style="width:100%"><thead><tr><th>Item</th><th class="r">Book</th><th class="r">Counted</th><th class="r">Variance</th></tr></thead><tbody>${c.lines.map(l=>`<tr><td>${esc(item(l.code).name)}</td><td class="r num">${fmt(l.book)}</td><td class="r num">${fmt(l.counted)}</td><td class="r num">${l.counted-l.book}</td></tr>`).join('')}</tbody></table>
+  <div class="copies"><div class="sig">Verifying officer: ${esc(c.verifier)}</div><div class="sig">Custodian: ${esc(PEOPLE.store)}</div></div></div>`; }
+
+/* ===================== Audit readiness ===================== */
+function exceptions(){ const ex=[];
+  S.vouchers.forEach(v=>{ const s=vStatus(v); if(s==='Overdue') ex.push(['Signed voucher not photographed within 24 hours',v.no]); if(s==='Disputed') ex.push(['Office disputes this issue',v.no]); });
+  S.discrepancies.filter(d=>d.status!=='Adjusted').forEach(d=>ex.push(['Variance under investigation',item(d.code).name]));
+  return ex; }
+function vAudit(){
+  const vr=ui.vres, g=gapCheck(), unack=S.vouchers.filter(v=>v.status!=='Acknowledged'&&v.status!=='Cancelled'), dToday=S.digests.find(d=>d.date===today()), cert=S.counts.some(c=>c.status==='Certified'), ex=exceptions();
+  const row=(state,text,why)=>`<div class="check"><span class="tick ${state}">${state==='ok'?'✓':state==='bad'?'!':'…'}</span><div><b>${text}</b><div class="why">${why}</div></div></div>`;
+  return `<h1>Audit readiness</h1><p class="lede">What an AG audit party checks in a stores audit, answered in one place. Fix the items in red before an inspection.</p>
+  <div class="grid g2">
+   <section class="panel"><h2>Checklist</h2>
+    ${row(unack.length?'wait':'ok', unack.length?`${unack.length} issue(s) not yet fully acknowledged`:'Every issue has a signed, photographed voucher','GFR 2017 Rule 209(ii): written acknowledgement of receipt')}
+    ${row(g.ok?'ok':'bad', g.ok?'Voucher numbers are continuous in every series':'Gaps in voucher numbers: '+g.bad.join(', '),'Form GFR-23 note: vouchers numbered consecutively in each financial year')}
+    ${row(!vr?'wait':vr.ok?'ok':'bad', !vr?'Ledger not verified yet in this session':vr.ok?`Ledger verified ${tstr(vr.at)}: ${vr.checked} entries, ${vr.digests} digest(s)`:'Ledger check FAILED','Every entry is chained to the one before; digests are emailed to Directorate officers daily')}
+    ${row(dToday?'ok':'wait', dToday?'Today\'s integrity digest has been sent':'Today\'s integrity digest not sent yet','The evening job emails the chain fingerprint to the Director, Accounts and the audit cell')}
+    ${row(cert?'ok':'wait', cert?'Physical verification certificate on record this year':'No physical verification this year yet','GFR 2017 Rule 213: at least once a year')}
+   </section>
+   <section class="panel"><h2>Ledger integrity</h2>
+    <div class="actions"><button class="btn" data-act="verify">Verify ledger</button><button class="btn ghost" data-act="digest">Send today's digest</button></div>
+    ${vr?`<pre class="out ${vr.ok?'ok':'bad'}">${vr.ok?`PASS: ${vr.checked} entries checked against ${vr.digests} emailed digest(s). Chain intact, voucher numbers continuous.`:'FAIL\n- '+vr.findings.map(esc).join('\n- ')}</pre>`:''}
+    ${ui.digestText?`<h3>Digest as emailed</h3><pre class="out">${esc(ui.digestText)}</pre>`:''}
+    <h3>Demonstration for evaluators</h3>
+    <p class="hint" style="margin:0 0 6px">Simulate what a database administrator could do, then run Verify ledger.</p>
+    <div class="actions">${S.tamper?`<button class="btn ghost sm" data-act="untamper">Undo the simulation</button><span class="chip bad">Simulation active: ${esc(S.tamper.kind)}</span>`:`<button class="btn danger sm" data-act="tamper-edit">Simulate: quietly edit a past issue</button><button class="btn danger sm" data-act="tamper-rewrite">Simulate: edit and rebuild the whole chain</button>`}</div>
+   </section>
+   <section class="panel flush"><h2>Fix list (${ex.length})</h2><div class="tbl"><table>${ex.map(([t,d])=>`<tr><td>${esc(t)}</td><td>${esc(d)}</td></tr>`).join('')||'<tr><td class="hint">Nothing to fix.</td></tr>'}</table></div></section>
+   <section class="panel"><h2>Audit Pack</h2><p class="hint" style="margin-top:0">One click each, for the current financial year. Opens in Excel.</p>
+    <div class="actions" style="flex-direction:column;align-items:flex-start">
+     <button class="btn ghost sm" data-act="pack" data-id="1">1. Stock register (GFR-23), all items</button>
+     <button class="btn ghost sm" data-act="pack" data-id="2">2. Issue voucher register with gap check</button>
+     <button class="btn ghost sm" data-act="pack" data-id="3">3. Acknowledgement exceptions</button>
+     <button class="btn ghost sm" data-act="pack" data-id="4">4. Physical verification and discrepancies</button>
+     <button class="btn ghost sm" data-act="pack" data-id="5">5. Record integrity and corrections</button></div></section>
+  </div>
+  <section class="panel flush" style="margin-top:14px"><h2>Activity log</h2><div class="tbl"><table><thead><tr><th>When</th><th>Who</th><th>Action</th><th>Document</th><th>Details</th></tr></thead><tbody>
+   ${S.audit.slice(0,12).map(a=>`<tr><td class="num">${tstr(a.ts)}</td><td>${esc(a.user)}</td><td>${esc(a.action)}</td><td>${esc(a.doc)}</td><td>${esc(a.detail)}</td></tr>`).join('')}</tbody></table></div></section>`;
+}
+function vDash(){
+  const low=S.items.filter(i=>bal(i.code)<=i.reorder); const value=S.items.reduce((s,i)=>s+bal(i.code)*i.rate,0); const ack=S.vouchers.filter(v=>v.status==='Acknowledged').length;
+  return `<h1>Overview</h1><p class="lede">Stock position and the state of the records, ${dstr(today())}.</p>
+  <div class="grid g4"><div class="tile"><span class="n num">${S.items.length}</span>items in the register</div><div class="tile ${low.length?'alert':''}"><span class="n num">${low.length}</span>at or below reorder level</div>
+  <div class="tile"><span class="n num">${ack}/${S.vouchers.length}</span>issues fully acknowledged</div><div class="tile"><span class="n num">₹${fmt(Math.round(value/1000))}k</span>stock value</div></div>
+  <section class="panel flush" style="margin-top:14px"><h2>Items to reorder</h2><div class="tbl"><table><thead><tr><th>Item</th><th class="r">In stock</th><th class="r">Reorder level</th><th>Status</th></tr></thead><tbody>
+  ${low.map(i=>`<tr><td>${esc(i.name)}</td><td class="r num">${fmt(bal(i.code))} ${esc(i.unit)}</td><td class="r num">${fmt(i.reorder)}</td><td>${stockChip(i.code)}</td></tr>`).join('')||'<tr><td class="hint">None.</td></tr>'}</tbody></table></div></section>`;
+}
+
+/* ===================== Dialog & printing ===================== */
+const dlg=$('#dlg');
+function openDlg(html){ $('#dlgC').innerHTML=html; if(!dlg.open) dlg.showModal(); }
+function closeDlg(){ if(dlg.open) dlg.close(); }
+dlg.addEventListener('click',e=>{ if(e.target===dlg) closeDlg(); });
+function printHTML(html){ $('#print').innerHTML=html; window.print(); }
+function download(name,rows){ const q=v=>`"${String(v??'').replace(/"/g,'""')}"`; const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['﻿'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'})); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+
+/* ===================== Actions ===================== */
+const A={
+  reset(){ if(confirm('Reset the demo data? Changes made in this browser will be lost.')){ seed(); ui.vres=null; ui.digestText=null; render(); toast('Demo data restored.'); } },
+  close: closeDlg, go: id=>go(id),
+  'new-req'(){ reqDraft={office:'DSE',letterNo:'',letterDate:today(),signatory:'',collector:'',lines:[{code:'',qty:''}],photo:''}; openDlg(reqForm()); },
+  'rl-add'(){ syncReq(); reqDraft.lines.push({code:'',qty:''}); openDlg(reqForm()); },
+  'rl-del'(k){ syncReq(); reqDraft.lines.splice(+k,1); if(!reqDraft.lines.length) reqDraft.lines.push({code:'',qty:''}); openDlg(reqForm()); },
+  'r-demo-photo'(){ syncReq(); reqDraft.photo=`letter-${reqDraft.office}-${Date.now()%10000}.jpg`; openDlg(reqForm()); },
+  'r-save'(){ syncReq(); const d=reqDraft, err=$('#r-err');
+    if(!d.letterNo.trim()) return err.textContent='Enter the letter number.';
+    if(!d.signatory.trim()) return err.textContent='Enter who signed the letter.';
+    const lines=d.lines.filter(l=>l.code||l.qty); if(!lines.length || lines.some(l=>!l.code||!(+l.qty>0))) return err.textContent='Choose an item and a quantity above zero on every line.';
+    if(!d.photo) return err.textContent='Photograph the signed letter (or use the demo photo). The approver must see it.';
+    const no=`IND/2026-27/${String(S.seqInd++).padStart(4,'0')}`;
+    S.indents.push({no,office:d.office,letterNo:d.letterNo,letterDate:d.letterDate,signatory:d.signatory,collector:d.collector,photo:d.photo,purpose:'',lines:lines.map(l=>({code:l.code,req:+l.qty,appr:null,iss:0})),status:'Waiting approval',ts:nowISO()});
+    log('Entered requisition letter',no,`${office(d.office).name}, letter ${d.letterNo}`); closeDlg(); render(); sms(`Requisition ${d.letterNo} registered as ${no}.`); },
+  issue(no){ openDlg(issueDialog(no)); },
+  'do-issue'(no){
+    const ind=S.indents.find(i=>i.no===no), o=office(ind.office), err=$('#i-err'), method=$('#i-method').value, col=$('#i-col').value;
+    if(method==='list' && col==='__other') return err.textContent='This person is not on the office\'s authorised list. Call the office, or check the letter or the Authority OTP.';
+    if(method==='otp' && $('#i-otp').value.trim()!==ind.otp) return err.textContent='That Authority OTP does not match. Ask the collector to check the SMS.';
+    if(method==='letter' && !ind.collector && col==='__other') return err.textContent='The letter names no collector. Use the authorised list or the Authority OTP.';
+    const qty={}; let bad=null; document.querySelectorAll('[data-iq]').forEach(el=>{ const l=ind.lines.find(x=>x.code===el.dataset.code), v=Math.floor(+el.value||0); if(v<0||v>l.appr-l.iss) bad=`Issue quantity for ${item(l.code).name} must be between 0 and ${l.appr-l.iss}.`; qty[l.code]=v; });
+    if(bad) return err.textContent=bad;
+    const lines=Object.entries(qty).filter(([c,q])=>q>0).map(([code,q])=>({code,qty:-q}));
+    if(!lines.length) return err.textContent='Nothing to issue.';
+    const short=lines.find(l=>bal(l.code)+l.qty<0);
+    if(short){ const it=item(short.code);
+      if(it.verified) return err.textContent=`Only ${bal(short.code)} ${it.unit} of ${it.name} in the register. Issue less now; the rest stays open.`;
+      $('#i-cc').style.display='block'; const counted=$('#i-counted').value, sup=$('#i-sup').value;
+      if(counted===''||!sup) return err.textContent=`The register shows ${bal(short.code)} ${it.unit} of ${it.name}. Count the shelf and choose an approving supervisor.`;
+      if(sup===PEOPLE.store) return err.textContent='The supervisor must be a different person from the Store Keeper.';
+      if(+counted < -short.qty) return err.textContent=`The shelf has only ${counted}. Issue at most ${counted}.`;
+      const before=bal(short.code);
+      const cc=postTxn('CC','COUNT_CORRECTION',today(),[{code:short.code,qty:+counted-before}],{party:'Shelf count before issue, approved by '+sup});
+      log('Count correction with issue',cc,`${it.name}: register ${before}, counted ${counted}; approved by ${sup}`); }
+    let v;
+    try { v=postTxn('IV','ISSUE',today(),lines,{party:o.name}); } catch(e){ return err.textContent=e.message; }
+    lines.forEach(l=>{ ind.lines.find(x=>x.code===l.code).iss+= -l.qty; });
+    ind.status=ind.lines.every(l=>l.iss>=l.appr)?'Issued':'Part issued';
+    const collector= method==='otp' ? 'Bearer of the Authority OTP' : method==='letter' && ind.collector ? ind.collector : col;
+    S.vouchers.push({no:v,indent:ind.no,office:ind.office,date:today(),ts:nowISO(),lines:lines.map(l=>({code:l.code,qty:-l.qty})),collector,method:{list:'Authorised list',letter:'Named in letter',otp:'Authority OTP'}[method],status:'Signed, photo pending'});
+    log('Issued and printed voucher',v,`${o.name}; collector ${collector}`); render(); openDlg(voucherDialog(v));
+    sms(`${lines.length} item line(s) on ${v} collected today by ${collector}. Not right? Call 0361-000000 (demo).`); },
+  voucher(no){ openDlg(voucherDialog(no)); },
+  'print-voucher'(no){ printHTML(voucherDoc(S.vouchers.find(v=>v.no===no))); },
+  'qr-check'(no){ const v=S.vouchers.find(x=>x.no===no);
+    openDlg(`<div class="dh"><h2 id="dlgT">Public QR check</h2><button class="x" data-act="close" aria-label="Close">×</button></div><div class="db"><table class="big"><tr><th>Voucher</th><td>${esc(v.no)}</td></tr><tr><th>Date</th><td>${dstr(v.date)}</td></tr><tr><th>Store</th><td>${esc(STORE)}</td></tr><tr><th>Lines</th><td>${v.lines.length}</td></tr><tr><th>Status</th><td>${v.status==='Cancelled'?'Cancelled':'Genuine'}</td></tr></table><p class="hint">Anyone holding the paper copy can check it is genuine. The page shows no names and no items.</p></div>`); },
+  capture(){ const pending=S.vouchers.filter(v=>['Signed, photo pending','Overdue'].includes(vStatus(v)));
+    pending.forEach(v=>{ v.status='Acknowledged'; v.photoAt=nowISO(); }); log('Day-end photo batch',`${pending.length} vouchers`,'Store copies matched by QR'); render(); toast(`${pending.length} signed voucher(s) photographed and matched by QR. Now acknowledged.`); },
+  dispute(no){ const v=S.vouchers.find(x=>x.no===no); v.status='Disputed'; log('Office disputed issue',no,'Recorded from a phone call'); render(); toast(`${no} marked Disputed. It appears on the Audit readiness fix list.`); },
+  receive(){ const d={supplier:$('#g-sup').value.trim(),ref:$('#g-ref').value.trim(),code:$('#g-code').value,qty:Math.floor(+$('#g-qty').value)}; recDraft=d; const err=$('#g-err');
+    if(!d.supplier||!d.ref) return err.textContent='Enter the supplier and the challan or order reference.';
+    if(!(d.qty>0)) return err.textContent='Enter the quantity received.';
+    if(!$('#g-cert').checked) return err.textContent='Tick the certificate: GFR Rule 208 requires the officer to certify receipt and entry.';
+    const v=postTxn('GRN','RECEIPT',today(),[{code:d.code,qty:d.qty}],{party:d.supplier,ref:d.ref}); log('Recorded goods receipt',v,`${item(d.code).name} × ${d.qty}`); recDraft={supplier:'',ref:'',code:d.code,qty:''}; render(); toast(`Receipt ${v} recorded. The register is updated.`); },
+  approve(no){ const ind=S.indents.find(i=>i.no===no), rem=$('#rm-'+CSS.escape(no)).value.trim(); let changed=false;
+    document.querySelectorAll(`[data-ap="${CSS.escape(no)}"]`).forEach(el=>{ const l=ind.lines[+el.dataset.k], v=Math.max(0,Math.min(l.req,Math.floor(+el.value||0))); if(v!==l.req) changed=true; l.appr=v; });
+    if(changed&&!rem){ ind.lines.forEach(l=>l.appr=null); return $('#ae-'+CSS.escape(no)).textContent='You reduced a quantity. Add a remark explaining why.'; }
+    ind.status='Ready to issue'; ind.approvedBy=PEOPLE.officer; ind.remark=rem; ind.otp=String(Math.floor(100000+Math.random()*900000));
+    log(changed?'Approved with reduction':'Approved requisition',no,rem||'As requested'); render(); sms(`${no} approved. Ready for collection. Authority OTP ${ind.otp} (give it to your collector).`); },
+  'return'(no){ const rem=$('#rm-'+CSS.escape(no)).value.trim(); if(!rem) return $('#ae-'+CSS.escape(no)).textContent='Add a remark so the office knows why.';
+    const ind=S.indents.find(i=>i.no===no); ind.status='Returned'; ind.remark=rem; log('Returned requisition',no,rem); render(); sms(`${no} returned: ${rem}`); },
+  'print-register'(){ printHTML(registerDoc(ui.item)); },
+  charge(){ openDlg(`<div class="dh"><h2 id="dlgT">Transfer of charge</h2><button class="x" data-act="close" aria-label="Close">×</button></div><div class="db">${chargeDoc()}<div class="actions noprint" style="margin-top:10px"><button class="btn" data-act="print-charge">Print statement</button></div></div>`); },
+  'print-charge'(){ printHTML(chargeDoc()); },
+  schedule(){ const who=$('#v-who').value; if(who===PEOPLE.store) return $('#v-err').textContent='You keep this store, so another officer must count.';
+    const codes=$('#v-scope').value==='A'?S.items.slice(0,5).map(i=>i.code):S.items.map(i=>i.code);
+    const id=`PV/${fy(today())}/${String(S.counts.length+1).padStart(2,'0')}`;
+    S.counts.push({id,verifier:who,date:today(),status:'Counting',lines:codes.map(code=>({code,book:null,counted:null}))}); log('Scheduled physical verification',id,`${codes.length} items, verifier ${who}`); render(); toast(`${id} scheduled. Switch user to the Verifier to count.`); },
+  'submit-count'(){ const c=S.counts.find(x=>x.status==='Counting'); let miss=false;
+    document.querySelectorAll('[data-cnt]').forEach(el=>{ if(el.value==='') miss=true; c.lines[+el.dataset.cnt].counted=Math.floor(+el.value); });
+    if(miss) return $('#v-err').textContent='Enter a count for every item (0 if none found).';
+    c.lines.forEach(l=>l.book=bal(l.code)); c.status='Awaiting countersign'; log('Submitted blind counts',c.id,PEOPLE.verifier); render(); toast('Counts submitted. The custodian now countersigns.'); },
+  countersign(){ const c=S.counts.find(x=>x.status==='Awaiting countersign'); c.status='Certified';
+    c.lines.forEach(l=>{ const it=item(l.code); it.verified=true; if(l.counted!==l.book) S.discrepancies.push({code:l.code,variance:l.counted-l.book,count:c.id,status:'Under investigation'}); });
+    log('Countersigned verification',c.id,'Certificate issued'); render(); openDlg(`<div class="dh"><h2 id="dlgT">Certificate issued</h2><button class="x" data-act="close" aria-label="Close">×</button></div><div class="db">${certDoc(c)}</div>`); },
+  cert(id){ openDlg(`<div class="dh"><h2 id="dlgT">${esc(id)}</h2><button class="x" data-act="close" aria-label="Close">×</button></div><div class="db">${certDoc(S.counts.find(c=>c.id===id))}<div class="actions noprint" style="margin-top:10px"><button class="btn" data-act="print-cert" data-id="${esc(id)}">Print certificate</button></div></div>`); },
+  'print-cert'(id){ printHTML(certDoc(S.counts.find(c=>c.id===id))); },
+  adjust(k){ const d=S.discrepancies[+k], ref=$('#sanc-'+k).value.trim(); if(!ref) return toast('Enter the sanction order reference. Without it the variance stays under investigation.');
+    const v=postTxn('ADJ','ADJUSTMENT',today(),[{code:d.code,qty:d.variance}],{party:'Adjustment after verification '+d.count,ref:'Sanction '+ref,by:PEOPLE.officer});
+    d.status='Adjusted'; d.voucher=v; log('Posted adjustment',v,`Sanction ${ref}`); render(); toast(`${v} posted against sanction ${ref}.`); },
+  verify(){ ui.vres=verifyLedger(); log('Ran Verify ledger',ui.vres.ok?'PASS':'FAIL',`${ui.vres.checked} entries`); render(); },
+  digest(){ const d=makeDigest(today()); S.digests=S.digests.filter(x=>x.date!==d.date).concat(d);
+    ui.digestText=[`e-Bhoral daily integrity digest: Directorate of Printing & Stationery (synthetic)`,`Date: ${dstr(d.date)}`,`Ledger entries to date: ${d.lastSeq}`,`Chain fingerprint (first 16): ${d.lastHash.slice(0,16)}`,
+      'Voucher series (last number issued):',...Object.entries(d.ranges).map(([k,v])=>`  ${k}: 000001 to ${String(v).padStart(6,'0')}`),`Gap check: ${d.gap}`,`Sent to: ${d.sentTo}`,"Keep this email. 'Verify ledger' compares the ledger with it."].join('\n');
+    log('Sent daily digest',dstr(d.date),'Director, Accounts, Audit cell'); render(); toast('Digest emailed (simulated) to the Director, Accounts Officer and audit cell.'); },
+  'tamper-edit'(){ const e=S.ledger.find(x=>x.type==='ISSUE'&&x.seq<=S.digests[0].lastSeq&&x.party==='Finance Department');
+    S.tamper={kind:'past issue edited',seq:e.seq,orig:JSON.parse(JSON.stringify(S.ledger))}; e.qty=e.qty+10; ui.vres=null; render(); toast(`Simulated: entry #${e.seq} (${e.voucher}) quietly changed from 60 to 50 reams. Now run Verify ledger.`); },
+  'tamper-rewrite'(){ const e=S.ledger.find(x=>x.type==='ISSUE'&&x.seq<=S.digests[0].lastSeq&&x.party==='Finance Department');
+    S.tamper={kind:'whole chain rebuilt',seq:e.seq,orig:JSON.parse(JSON.stringify(S.ledger))}; e.qty=e.qty+10;
+    let prev=e.seq>1?S.ledger[e.seq-2].hash:genesis(); S.ledger.slice(e.seq-1).forEach(x=>{ x.prev=prev; x.hash=entryHash(x); prev=x.hash; });
+    ui.vres=null; render(); toast('Simulated: a past issue edited and every later fingerprint recomputed. Only the emailed digest can reveal it. Run Verify ledger.'); },
+  untamper(){ S.ledger=S.tamper.orig; S.tamper=null; ui.vres=null; render(); toast('Simulation undone. The real ledger is back.'); },
+  pack(id){ const fyNow=fy(today());
+    if(id==='1') download(`audit-pack-1-gfr23-${fyNow}.csv`,[['Item','Date','Voucher','From/to','Received','Issued','Balance','Entered by','Reference'],...S.items.flatMap(it=>{ let r=0; return S.ledger.filter(e=>e.code===it.code).map(e=>{ r+=e.qty; return [it.name,e.date,e.voucher,e.party,e.qty>0?e.qty:'',e.qty<0?-e.qty:'',r,e.by,e.ref]; }); })]);
+    if(id==='2'){ const g=gapCheck(); download(`audit-pack-2-voucher-register-${fyNow}.csv`,[['Voucher','Date','Type','To/from','Status'],...[...new Set(S.ledger.map(e=>e.voucher))].map(v=>{ const e=S.ledger.find(x=>x.voucher===v), vo=S.vouchers.find(x=>x.no===v); return [v,e.date,e.type,e.party,vo?vStatus(vo):'Posted']; }),[],['Series','Last number','Count','Gaps'],...g.series.map(s=>[s.k,s.last,s.count,s.last-s.count])]); }
+    if(id==='3') download(`audit-pack-3-acknowledgement-exceptions-${fyNow}.csv`,[['Voucher','Office','Collector','How authorised','Status'],...S.vouchers.filter(v=>v.status!=='Acknowledged').map(v=>[v.no,office(v.office).name,v.collector,v.method,vStatus(v)])]);
+    if(id==='4') download(`audit-pack-4-verification-${fyNow}.csv`,[['Count','Date','Verifier','Item','Book','Counted','Variance'],...S.counts.flatMap(c=>c.lines.map(l=>[c.id,c.date,c.verifier,item(l.code).name,l.book,l.counted,(l.counted??0)-(l.book??0)])),[],['Discrepancy','Variance','Status','Adjustment voucher'],...S.discrepancies.map(d=>[item(d.code).name,d.variance,d.status,d.voucher||''])]);
+    if(id==='5'){ const r=verifyLedger(); download(`audit-pack-5-integrity-${fyNow}.csv`,[['Check','Result'],['Verify ledger',r.ok?'PASS':'FAIL'],...r.findings.map(f=>['Finding',f]),[],['Digest date','Last entry','Fingerprint'],...S.digests.map(d=>[d.date,d.lastSeq,d.lastHash]),[],['Correction voucher','Date','Reference'],...S.ledger.filter(e=>['COUNT_CORRECTION','ADJUSTMENT','REVERSAL'].includes(e.type)).map(e=>[e.voucher,e.date,e.ref||e.party])]); }
+    log('Downloaded Audit Pack report',id,'CSV'); toast('Audit Pack report downloaded.'); }
+};
+document.addEventListener('click',e=>{
+  const v=e.target.closest('[data-view]'); if(v){ go(v.dataset.view); return; }
+  const l=e.target.closest('[data-lang]'); if(l){ LANG=l.dataset.lang; render(); if(dlg.open) closeDlg(); return; }
+  const a=e.target.closest('[data-act]'); if(a&&A[a.dataset.act]){ A[a.dataset.act](a.dataset.id,a); }
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='role'){ ui.role=e.target.value; ui.view=null; closeDlg(); render(); toast(`Now using the demo as ${ROLES[ui.role].label}.`); return; }
+  if(e.target.id==='reg-item'){ ui.item=e.target.value; render(); return; }
+  if(e.target.id==='r-photo' && e.target.files[0]){ syncReq(); reqDraft.photo=e.target.files[0].name; openDlg(reqForm()); return; }
+  if(e.target.dataset.rl!==undefined && e.target.dataset.k==='code'){ syncReq(); openDlg(reqForm()); }
+});
+load(); render();
+</script>
+</body>
+</html>

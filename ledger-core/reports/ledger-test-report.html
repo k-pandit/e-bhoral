@@ -1,0 +1,63 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>e-Bhoral ledger core test report</title>
+<style>
+ body{font:13px/1.45 'Segoe UI',Arial,sans-serif;color:#1C2A4A;max-width:900px;margin:24px auto;padding:0 20px}
+ h1{font-size:22px;margin:0 0 4px} h2{font-size:16px;margin:22px 0 8px;border-bottom:1px solid #C9D1DC;padding-bottom:4px}
+ h4{margin:10px 0 4px;font-size:13px} .banner{background:#FFF4D6;border:1px solid #E9C98A;padding:6px 10px;font-weight:600}
+ table{border-collapse:collapse;width:100%;font-size:12px} th,td{border:1px solid #D6DDE6;padding:5px 7px;text-align:left;vertical-align:top}
+ th{background:#E8EEF6} .pass{color:#1F7A55;font-weight:700} .fail,.notrun{color:#C8102E;font-weight:700}
+ pre{background:#F4F6F9;border:1px solid #D6DDE6;padding:8px;white-space:pre-wrap;font-size:11.5px;margin:0}
+ .kv td:first-child{width:180px;color:#5B6578} .verdict{font-size:15px;font-weight:700;color:#1F7A55}
+ @media print{body{margin:0} h2{break-after:avoid} table,pre{break-inside:avoid}}
+</style></head><body>
+<h1>e-Bhoral ledger core: automated test report</h1>
+<p class="banner">SYNTHETIC DATA. These tests prove the ledger rules claimed in the e-Bhoral proposal (section 4.4).</p>
+<p class="verdict">13 of 13 tests passed</p>
+<table class="kv">
+ <tr><td>Run</td><td>19 Nov 2026, 20:04 IST</td></tr>
+ <tr><td>Code fingerprint</td><td>SHA-256 e89e804edeb50bd5 (sql/, ebhoral_core/, tests/)</td></tr>
+ <tr><td>Database</td><td>PostgreSQL 16.2 (real server, not a mock)</td></tr>
+ <tr><td>Runtime</td><td>Python 3.12.10, Windows 11 (AMD64); pytest + Hypothesis (fixed seeds)</td></tr>
+</table>
+<h2>1. Results</h2>
+<table><tr><th>ID</th><th>Claim (as worded in the proposal)</th><th>Section</th><th>Result</th><th>Time</th><th>Volume tested</th></tr><tr><td>T1</td><td>The balance always equals the sum of the ledger</td><td>4.4 rule 10</td><td class='pass'>PASS</td><td>8.3 s</td><td>10,000 postings; 828 over-issues rejected; 0 mismatches</td></tr><tr><td>T1b</td><td>For any sequence of postings the invariants hold (property test)</td><td>4.4 rules 4, 10</td><td class='pass'>PASS</td><td>17.9 s</td><td>40 generated sequences (fixed seed)</td></tr><tr><td>T2</td><td>Stock can never go negative</td><td>4.4 rule 4</td><td class='pass'>PASS</td><td>1.1 s</td><td></td></tr><tr><td>T3</td><td>Two simultaneous issues of the last stock cannot both succeed</td><td>4.4 rule 4</td><td class='pass'>PASS</td><td>0.6 s</td><td>20 parallel connections; 1 succeeded</td></tr><tr><td>T4</td><td>The ledger is append-only, enforced by the database</td><td>4.4 rule 2</td><td class='pass'>PASS</td><td>0.3 s</td><td></td></tr><tr><td>T5</td><td>Tampering is evident: Verify ledger finds it</td><td>4.4 rules 7, 8</td><td class='pass'>PASS</td><td>0.3 s</td><td>4 attacks; 4 detected</td></tr><tr><td>T6</td><td>Corrections only by reversal, once, with reason and sanction</td><td>4.4 rule 3</td><td class='pass'>PASS</td><td>0.2 s</td><td></td></tr><tr><td>T7</td><td>Gapless voucher numbers per financial year</td><td>4.4 rule 6; GFR-23</td><td class='pass'>PASS</td><td>3.3 s</td><td>2,000 postings, 426 forced failures; 500 concurrent</td></tr><tr><td>T8</td><td>Count correction needs a different supervisor; verified stock excluded</td><td>4.4 rule 5</td><td class='pass'>PASS</td><td>0.2 s</td><td></td></tr><tr><td>T9</td><td>A repeated submission never creates a second voucher</td><td>4.4 rule 9</td><td class='pass'>PASS</td><td>0.6 s</td><td>2 sequential + 5 concurrent retries -&gt; 2 vouchers</td></tr><tr><td>T10</td><td>The daily digest anchor is recorded and cannot be altered</td><td>4.4 rule 8</td><td class='pass'>PASS</td><td>0.7 s</td><td></td></tr><tr><td>T11</td><td>Changing a unit conversion never rewrites history</td><td>4.3</td><td class='pass'>PASS</td><td>0.2 s</td><td></td></tr><tr><td>T12</td><td>Throughput far above pilot load</td><td>4.2</td><td class='pass'>PASS</td><td>1.2 s</td><td>1059.2 postings/second (pilot: about 100 a day)</td></tr></table>
+<h2>2. Tamper detection (T5)</h2>
+<p>A database superuser switched off every trigger and attacked the ledger four ways. Each attack was rolled back after
+the check. <b>Verify ledger</b> recomputes every SHA-256 link independently in Python and compares the chain with the
+digest already emailed out of the system. The fourth attack rewrote the whole chain <i>and</i> the stored anchors, so
+the database was internally consistent: only the emailed digest could expose it, and it did.</p>
+<h4>Attack: edit quantity of entry #17</h4><pre>VERIFY LEDGER: FAIL (65 entries checked)
+  - entry #17 (GRN/2026-27/000009, dated 2026-11-20) was changed after posting: content no longer matches its hash
+  - balance of item 2 in store 1 is 1850 but its ledger lines sum to 1350</pre><h4>Attack: delete entry #23</h4><pre>VERIFY LEDGER: FAIL (64 entries checked)
+  - entry #23 is missing or out of order (found #24 next)
+  - balance of item 2 in store 1 is 1850 but its ledger lines sum to 1750</pre><h4>Attack: swap entries #40 and #41</h4><pre>VERIFY LEDGER: FAIL (65 entries checked)
+  - chain link broken at entry #40 (GRN/2026-27/000021): previous-hash does not match entry #39</pre><h4>Attack: rewrite entry #10 and recompute the whole chain</h4><pre>VERIFY LEDGER: FAIL (65 entries checked)
+  - ledger does not match the digest emailed on 2026-11-20 (entry #60, sent hash 54f71a65b212bd06...): past entries were rewritten</pre>
+<h2>3. Voucher continuity (T7)</h2>
+<p>Every series runs from 000001 with no gaps or duplicates, despite about 20% forced failures and 10 concurrent writers.
+Series restart at 000001 on 1 April (financial year 2027-28).</p>
+<table><tr><th>Series</th><th>Financial year</th><th>First</th><th>Last</th><th>Count</th><th>Gaps</th><th>Duplicates</th></tr><tr><td>GRN</td><td>2026-27</td><td>000001</td><td>002075</td><td>2075</td><td>0</td><td>0</td></tr><tr><td>GRN</td><td>2027-28</td><td>000001</td><td>000001</td><td>1</td><td>0</td><td>0</td></tr><tr><td>IV</td><td>2027-28</td><td>000001</td><td>000001</td><td>1</td><td>0</td><td>0</td></tr></table>
+<h2>4. Daily integrity digest (T10), as it would be emailed</h2>
+<pre>e-Bhoral daily integrity digest - Directorate of Printing &amp; Stationery (synthetic)
+Date: 2026-11-20
+Ledger entries to date: 2
+Chain hash (first 16): d2188050c123580e
+Voucher series (last number issued):
+  GRN/2026-27: 000001 to 000001
+  IV/2026-27: 000001 to 000001
+Gap check: OK
+Sent to: Director, Accounts Officer, Audit cell
+Keep this email. &#x27;Verify ledger&#x27; compares the ledger with it; any later change to a past entry will show.</pre>
+<h2>5. Reproduce</h2>
+<pre>python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt      (Linux/macOS: .venv/bin/pip)
+.venv\Scripts\python scripts\make_report.py</pre>
+<p>pgserver starts an embedded PostgreSQL 16 automatically; no Docker or separate installation is needed.</p>
+<h2>6. Limits, stated plainly</h2>
+<ul>
+ <li>This proves the ledger rules in the database. It does not test the user interface, hosting security (that is the
+ VAPT by a CERT-In-empanelled auditor) or e-mail delivery of the digest.</li>
+ <li>A change made on the same day before the evening digest is sent is not caught by the digest; it is bounded by the
+ collector's signed paper voucher and the privileged-session log.</li>
+ <li>Tampering becomes <b>evident, not impossible</b>. No blockchain is used or needed.</li>
+</ul>
+</body></html>
